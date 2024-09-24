@@ -1,0 +1,74 @@
+version: '3.12'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    command: /start
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env/.dev
+    depends_on:
+      - redis
+      - db
+
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env/.dev
+
+  redis:
+    image: redis:7-alpine
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: django-celery-worker
+    command: /start-celeryworker
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env/.dev
+    depends_on:
+      - redis
+      - db
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: django-celery-beat
+    command: /start-celerybeat
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env/.dev
+    depends_on:
+      - redis
+      - db
+
+  flower:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: django-celery-flower
+    command: /start-flower
+    volumes:
+      - .:/app
+    ports:
+      - 5555:5555
+    env_file:
+      - ./.env/.dev
+    depends_on:
+      - redis
+      - db
+
+volumes:
+  postgres_data:
