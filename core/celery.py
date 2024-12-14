@@ -14,8 +14,3 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # discover and load tasks.py from from all registered Django apps
 app.autodiscover_tasks()
-
-
-@app.task
-def task():
-    pass
