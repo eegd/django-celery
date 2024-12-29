@@ -32,5 +32,5 @@ api_urlpatterns = [
 urlpatterns = [
     path("", RedirectView.as_view(url=reverse_lazy("docs"))),
     path('admin/', admin.site.urls),
-    path("api/", include(api_urlpatterns), name="api")
+    path("", include(api_urlpatterns))
 ]

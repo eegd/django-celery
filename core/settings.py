@@ -43,6 +43,8 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "rest_framework",
+    'channels',
+    'daphne',
     "drf_spectacular",
 ]
 
@@ -50,7 +52,7 @@ LOCAL_APPS = [
     "app",
 ]
 
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_APPS + LOCAL_APPS
 
 
 MIDDLEWARE = [
@@ -81,7 +83,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'core.wsgi.application'
+# WSGI_APPLICATION = 'core.wsgi.application'
+ASGI_APPLICATION = 'core.asgi.application'
 
 
 # Database
@@ -153,4 +156,13 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "",
     "VERSION": "1.0.0",
     "SERVER_INCLUDE_SCHEMA": False,
+}
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(os.environ.get("CHANNELS_REDIS", "redis://127.0.0.1:6379/0"))],
+        },
+    },
 }
