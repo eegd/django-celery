@@ -46,6 +46,7 @@ THIRD_PARTY_APPS = [
     'channels',
     'daphne',
     "drf_spectacular",
+    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
@@ -147,15 +148,11 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://127.0.0.1:6379/0")
 
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://127.0.0.1:6379/0")
 
-REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-}
-
-SPECTACULAR_SETTINGS = {
-    "TITLE": "DJANGO BACKEND",
-    "DESCRIPTION": "",
-    "VERSION": "1.0.0",
-    "SERVER_INCLUDE_SCHEMA": False,
+CELERY_BEAT_SCHEDULE = {
+    'task-clear-session': {
+        'task': 'task_clear_session',
+        "schedule": 600,
+    },
 }
 
 CHANNEL_LAYERS = {
@@ -165,4 +162,15 @@ CHANNEL_LAYERS = {
             "hosts": [(os.environ.get("CHANNELS_REDIS", "redis://127.0.0.1:6379/0"))],
         },
     },
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "DJANGO BACKEND",
+    "DESCRIPTION": "",
+    "VERSION": "1.0.0",
+    "SERVER_INCLUDE_SCHEMA": False,
 }
