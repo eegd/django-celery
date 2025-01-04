@@ -41,6 +41,21 @@ def task_clear_session():
     call_command('clearsessions')
 
 
+@shared_task(name='default:default_task')
+def task_default():
+    logger.info('default task is processing')
+
+
+@shared_task(name='low_priority:low_priority_task')
+def task_low_priority():
+    logger.info('low priority task is processing')
+
+
+@shared_task(name='high_priority:high_priority_task')
+def task_high_priority():
+    logger.info('high priority task is processing')
+
+
 @task_postrun.connect
 def task_postrun_handler(task_id, **kwargs):
     """

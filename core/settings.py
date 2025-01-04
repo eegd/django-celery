@@ -14,6 +14,10 @@ import os
 
 from pathlib import Path
 
+from kombu import Queue
+
+from app.utils import route_task
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -154,6 +158,24 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 600,
     },
 }
+
+CELERY_TASK_DEFAULT_QUEUE = 'default'
+
+CELERY_TASK_CREATE_MISSING_QUEUES = False
+
+# CELERY_TASK_ROUTES = {
+#     'core.celery.*': {
+#         'queue': 'high_priority',
+#     },
+# }
+
+CELERY_TASK_ROUTES = (route_task)
+
+CELERY_TASK_QUEUES = (
+    Queue('default'),
+    Queue('high_priority'),
+    Queue('low_priority'),
+)
 
 CHANNEL_LAYERS = {
     'default': {
