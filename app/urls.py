@@ -1,6 +1,6 @@
 from django.urls import path
 
-from app.views import subscribe, subscribe_ws, task_status, webhook, webhook_async
+from app.views import subscribe, subscribe_ws, task_status, transaction_celery, webhook, webhook_async
 
 
 urlpatterns = [
@@ -9,5 +9,5 @@ urlpatterns = [
     path("task_status/", task_status, name="task_status"),
     path("webhook/", webhook, name="webhook"),
     path('webhook_async/', webhook_async, name='webhook_async'),
-
+    path('transaction_celery/', transaction_celery, name='transaction_celery'),
 ]

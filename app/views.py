@@ -1,15 +1,20 @@
 import random
+import time
 
 import requests
 
 from celery.result import AsyncResult
 from celery.utils.log import get_task_logger
+from django.contrib.auth.models import User
+from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from functools import partial
 
 from app.forms import Form
-from app.tasks import task_call, task_process_notification
+from app.tasks import task_call, task_send_email, task_process_notification
+from app.utils import random_username
 
 logger = get_task_logger(__name__)
 
@@ -82,3 +87,15 @@ def webhook_async(request) -> HttpResponse:
     task = task_process_notification.delay()  # type: ignore
     logger.info(f"Task ID: {task.id}")
     return HttpResponse('pong')
+
+
+@transaction.atomic
+def transaction_celery(request):
+    username = random_username()
+    user = User.objects.create_user(username, 'user@mail.com', 'password')
+    logger.info(f'create user {user.pk}')
+    # the task does not get called until after the transaction is committed
+    transaction.on_commit(partial(task_send_email.delay, user.pk))  # type: ignore
+
+    time.sleep(1)
+    return HttpResponse('test')

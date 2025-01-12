@@ -1,15 +1,23 @@
 import random
 
 import requests
+import celery
 
 from celery import shared_task
 from celery.signals import task_postrun
 from celery.utils.log import get_task_logger
+from django.contrib.auth.models import User
 
 from app.consumers import notify_channel_layer
 
 
 logger = get_task_logger(__name__)
+
+
+class BaseTaskWithRetry(celery.Task):
+    autoretry_for = (Exception, KeyError)
+    retry_kwargs = {'max_retries': 5}
+    retry_backoff = True
 
 
 @shared_task()
@@ -22,17 +30,19 @@ def task_call():
     requests.post('https://httpbin.org/delay/5')
 
 
-@shared_task(bind=True)
-def task_process_notification(self):
-    try:
-        if not random.choice([0, 1]):
-            raise Exception('random processing error')
+@shared_task()
+def task_send_email(user_pk):
+    user = User.objects.get(pk=user_pk)
+    logger.info(f'send email to {user.email} {user.pk}')
 
-        # this would block the I/O
-        requests.post('https://httpbin.org/delay/5')
-    except Exception as e:
-        logger.error('exception raised, it would be retry after 5 seconds')
-        raise self.retry(exc=e, countdown=5)
+
+@shared_task(bind=True, base=BaseTaskWithRetry)
+def task_process_notification(self):
+    if not random.choice([0, 1]):
+        # mimic random error
+        raise Exception()
+
+    requests.post('https://httpbin.org/delay/5')
 
 
 @shared_task(name='task_clear_session')
